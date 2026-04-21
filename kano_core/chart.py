@@ -28,9 +28,9 @@ def create_matrix_chart(
     draw = ImageDraw.Draw(img)
 
     try:
-        font_header = ImageFont.truetype("arial.ttf", 22)
-        font_cell = ImageFont.truetype("arial.ttf", 16)
-        font_label = ImageFont.truetype("arial.ttf", 18)
+        font_header = ImageFont.truetype("/usr/share/fonts/truetype/crosextra/Carlito-Bold.ttf", 22)
+        font_cell = ImageFont.truetype("/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf", 16)
+        font_label = ImageFont.truetype("/usr/share/fonts/truetype/crosextra/Carlito-Regular.ttf", 18)
     except Exception:
         font_header = font_cell = font_label = ImageFont.load_default()
 
