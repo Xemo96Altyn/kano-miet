@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kano Dashboard</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Creator Dashboard</p>
+          <h1>Кабинет создателя опроса и анализа</h1>
+          <p class="hero-text">
+            Здесь отображается количество респондентов, результаты анализа и матрица. Респондентам этот экран не нужен.
+          </p>
+          <div style="margin-top: 20px;">
+            <a href="/home" class="btn btn-ghost btn-link">← Вернуться на главную</a>
+          </div>
+        </div>
+        <div class="hero-card">
+          <label class="field-label" for="survey-file">Файл опросника</label>
+          <div class="survey-load-row">
+            <input id="survey-id" type="text" value="" placeholder="Введите survey_id" autocomplete="off">
+            <button id="load-dashboard" class="btn btn-primary">Обновить</button>
+          </div>
+          <p id="dashboard-status" class="muted">Панель ждет загрузки опросника.</p>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="panel panel-survey">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Управление</p>
+              <h2>Сбор ответов</h2>
+            </div>
+            <div class="badge-row">
+              <span id="respondent-count" class="badge badge-soft">Респондентов: 0</span>
+            </div>
+          </div>
+
+          <div id="dashboard-meta" class="result-block">
+            Данные по опроснику появятся после обновления.
+          </div>
+
+          <div class="actions">
+            <button id="run-analysis" class="btn btn-primary" type="button">Провести анализ</button>
+            <button id="clear-responses" class="btn btn-ghost" type="button">Очистить ответы</button>
+            <button id="delete-survey" class="btn btn-danger" type="button">Удалить опрос</button>
+          </div>
+
+          <div class="panel-head dashboard-survey-list-head">
+            <div>
+              <p class="section-kicker">Опросы</p>
+              <h2>Все созданные опросы</h2>
+            </div>
+          </div>
+          <div id="survey-list" class="feature-results"></div>
+        </section>
+
+        <aside class="panel panel-results">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Аналитика</p>
+              <h2>Итоги анализа</h2>
+            </div>
+          </div>
+
+          <div id="results-placeholder" class="empty-state">
+            Сначала соберите ответы, затем запустите анализ.
+          </div>
+
+          <div id="results" class="results hidden">
+            <div id="summary-cards" class="summary-grid"></div>
+            <div id="priority-block" class="result-block"></div>
+            <div id="warning-block" class="result-block hidden"></div>
+            <div id="feature-results" class="feature-results"></div>
+            <div id="chart-block" class="result-block hidden">
+              <h3>Матрица Кано</h3>
+              <img id="chart-image" alt="Матрица Кано">
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+
+    <script src="/assets/dashboard.js" defer></script>
+  </body>
+</html>

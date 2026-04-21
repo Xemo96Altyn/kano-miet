@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kano Builder</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Survey Builder</p>
+          <h1>Создание новых опросов по модели Кано</h1>
+          <p class="hero-text">
+            Соберите новый опрос, сохраните его на сервере и сразу получите независимые ссылки
+            для респондентов и аналитической панели.
+          </p>
+          <div style="margin-top: 20px;">
+            <a href="/home" class="btn btn-ghost btn-link">← Вернуться на главную</a>
+          </div>
+        </div>
+        <div class="hero-card">
+          <p id="builder-status" class="muted">Добавьте название и свойства будущего опроса.</p>
+        </div>
+      </header>
+
+      <main class="layout single-column">
+        <section class="panel panel-survey">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Конструктор</p>
+              <h2>Параметры опроса</h2>
+            </div>
+          </div>
+
+          <div class="field-stack">
+            <label class="field-label" for="survey-title">Название опроса</label>
+            <input id="survey-title" type="text" placeholder="Название">
+          </div>
+
+          <div id="feature-list" class="feature-builder-list"></div>
+
+          <div class="actions">
+            <button id="add-feature" class="btn btn-secondary" type="button">Добавить свойство</button>
+            <button id="create-survey" class="btn btn-primary" type="button">Создать опрос</button>
+          </div>
+
+          <div id="created-links" class="empty-state">
+            После создания здесь появятся ссылки на новый опрос и кабинет анализа.
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/assets/builder.js" defer></script>
+  </body>
+</html>

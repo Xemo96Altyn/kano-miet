@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kano Hub</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Kano Hub</p>
+          <h1>Главная страница управления опросами Кано</h1>
+          <p class="hero-text">
+            Отсюда можно создать новый опрос, открыть кабинет анализа или перейти по ссылке респондента.
+          </p>
+	  <div style="margin-top: 20px;">
+            <button id="btn-logout" class="btn btn-ghost">Выйти из аккаунта</button>
+          </div>
+        </div>
+        <div class="hero-card">
+          <p class="muted">Выберите нужный режим работы. Конструктор создает новые опросы, а dashboard открывает аналитику по конкретному `survey_id`.</p>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Навигация</p>
+              <h2>Переходы</h2>
+            </div>
+          </div>
+          <div class="feature-results home-nav-grid">
+            <article class="feature-card">
+              <div class="feature-top">
+                <div>
+                  <div class="feature-code">Builder</div>
+                  <h3>Создать новый опрос</h3>
+                </div>
+              </div>
+              <p>Собрать структуру опроса, сохранить на сервере и получить две независимые ссылки.</p>
+              <div class="actions">
+                <a class="btn btn-secondary btn-link" href="/builder">Открыть builder</a>
+              </div>
+            </article>
+            <article class="feature-card">
+              <div class="feature-top">
+                <div>
+                  <div class="feature-code">Dashboard</div>
+                  <h3>Перейти к аналитике</h3>
+                </div>
+              </div>
+              <p>Открывает пустую панель, где можно ввести `survey_id` или перейти по прямой ссылке вида `/dashboard/&lt;id&gt;`.</p>
+              <div class="actions">
+                <a class="btn btn-secondary btn-link" href="/dashboard">Открыть dashboard</a>
+              </div>
+            </article>
+             <!-- НОВАЯ КАРТОЧКА АДМИНА (По умолчанию скрыта классом hidden) -->
+            <article class="feature-card admin-only hidden" id="admin-card">
+              <div class="feature-top">
+                <div>
+                  <div class="feature-code">Admin</div>
+                  <h3>Панель Администратора</h3>
+                </div>
+              </div>
+              <p>Управление пользователями, выдача прав и глобальный мониторинг.</p>
+              <div class="actions">
+                <a class="btn btn-secondary btn-link" href="/admin">Открыть панель</a>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script>
+      // 1. Проверяем роль (мы сохраняли ее при логине)
+      const userRole = localStorage.getItem('kano_role');
+      if (userRole === 'admin') {
+        const adminCard = document.getElementById('admin-card');
+        if (adminCard) {
+          adminCard.classList.remove('hidden');
+        }
+      }
+
+      // 2. Логика выхода (с очисткой памяти браузера)
+      document.getElementById('btn-logout').addEventListener('click', async () => {
+        localStorage.removeItem('kano_role'); // Чистим роль при выходе
+        await fetch('/api/logout', { method: 'POST' });
+        window.location.href = '/'; // Возвращаем на страницу входа
+      });
+    </script>
+  </body>
+</html>

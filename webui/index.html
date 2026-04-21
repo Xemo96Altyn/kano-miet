@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Вход - ИС КАНО</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <div class="page-shell" style="max-width: 500px; margin-top: 100px;">
+      <main class="layout single-column">
+        <section class="panel panel-survey">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">ИС КАНО</p>
+              <h2>Вход в систему</h2>
+            </div>
+          </div>
+
+          <div id="status-message" class="error-banner hidden"></div>
+
+          <div class="field-stack">
+            <label class="field-label">Логин</label>
+            <input id="login-username" type="text" placeholder="Введите логин">
+          </div>
+
+          <div class="field-stack">
+            <label class="field-label">Пароль</label>
+            <input id="login-password" type="password" placeholder="Введите пароль">
+          </div>
+
+          <div class="actions">
+            <button id="btn-login" class="btn btn-primary" type="button" style="width: 100%;">Войти</button>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center;">
+            <a href="/register" class="muted">Нет аккаунта? Зарегистрироваться</a>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      document.getElementById('btn-login').addEventListener('click', async () => {
+        const username = document.getElementById('login-username').value.trim();
+        const password = document.getElementById('login-password').value.trim();
+        const statusDiv = document.getElementById('status-message');
+
+        if (!username || !password) {
+          statusDiv.textContent = 'Введите логин и пароль!';
+          statusDiv.classList.remove('hidden');
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, password: password })
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            localStorage.setItem('kano_role', data.role);
+            statusDiv.classList.add('hidden');
+            window.location.href = '/home'; // При успехе кидаем в личный кабинет
+          } else {
+            statusDiv.textContent = data.error || 'Неверный логин или пароль';
+            statusDiv.classList.remove('hidden');
+          }
+        } catch (e) {
+          statusDiv.textContent = 'Ошибка сети';
+          statusDiv.classList.remove('hidden');
+        }
+      });
+    </script>
+  </body>
+</html>

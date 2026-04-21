@@ -1,0 +1,29 @@
+{
+  "features": [
+    {
+      "feature_id": "А1",
+      "name": "Безопасность",
+      "description": ""
+    },
+    {
+      "feature_id": "А2",
+      "name": "Эмодзи",
+      "description": ""
+    },
+    {
+      "feature_id": "А3",
+      "name": "Создание каналов",
+      "description": ""
+    },
+    {
+      "feature_id": "А4",
+      "name": "Редактирование сообщений",
+      "description": ""
+    },
+    {
+      "feature_id": "А5",
+      "name": "Наличие премиум-подписки",
+      "description": ""
+    }
+  ]
+}

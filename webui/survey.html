@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Kano Survey</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Respondent Flow</p>
+          <h1>Ответьте на вопросы опроса по модели Кано</h1>
+          <p class="hero-text">
+            Для каждого свойства выберите два ответа: что вы думаете, если свойство есть, и что вы думаете, если его нет.
+          </p>
+        </div>
+        <div class="hero-card">
+          <label class="field-label" for="survey-file">Файл опросника</label>
+          <div class="survey-load-row">
+            <input id="survey-id" type="text" value="telega" autocomplete="off">
+            <button id="load-survey" class="btn btn-primary">Открыть опрос</button>
+          </div>
+          <p id="survey-status" class="muted">После загрузки опроса вы сразу становитесь текущим респондентом.</p>
+        </div>
+      </header>
+
+      <main class="layout single-column">
+        <section class="panel panel-survey">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Респондент</p>
+              <h2>Форма ответов</h2>
+            </div>
+            <div class="badge-row">
+              <span class="badge">Все ответы обязательны</span>
+            </div>
+          </div>
+
+          <div id="empty-state" class="empty-state">
+            Загрузите опросник, чтобы начать заполнение.
+          </div>
+
+          <div id="error-state" class="error-banner hidden"></div>
+
+          <form id="survey-form" class="question-list hidden"></form>
+
+          <div class="actions hidden" id="form-actions">
+            <button id="submit-response" class="btn btn-primary" type="button">Отправить ответы</button>
+            <button id="reset-form" class="btn btn-ghost" type="button">Очистить форму</button>
+          </div>
+
+          <div id="thank-you-state" class="thank-you hidden">
+            <h2>Спасибо за прохождение опроса</h2>
+            <p>Ваши ответы сохранены. Теперь можно закрыть страницу.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/assets/respondent.js" defer></script>
+  </body>
+</html>

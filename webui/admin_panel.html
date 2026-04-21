@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Панель Администратора - ИС КАНО</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+    <style>
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th, td { text-align: left; padding: 12px; border-bottom: 1px solid rgba(93, 71, 52, 0.2); }
+      th { color: var(--muted); font-weight: normal; font-size: 14px; }
+      .role-badge { padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: bold; }
+      .role-admin { background: rgba(184, 87, 45, 0.2); color: var(--accent); }
+      .role-organizer { background: rgba(47, 109, 98, 0.2); color: var(--accent-3); }
+    </style>
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Admin Panel</p>
+          <h1>Управление пользователями</h1>
+          <p class="hero-text">Здесь вы можете назначать роли и управлять доступом.</p>
+          <div style="margin-top: 20px;">
+            <a href="/home" class="btn btn-ghost btn-link">← Вернуться на главную</a>
+          </div>
+        </div>
+      </header>
+
+      <main class="layout single-column">
+        <section class="panel panel-survey">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">База данных</p>
+              <h2>Зарегистрированные пользователи</h2>
+            </div>
+          </div>
+          
+          <div id="users-container" style="overflow-x: auto;">
+            <p class="muted">Загрузка пользователей...</p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      async function loadUsers() {
+        const res = await fetch('/api/admin/users');
+        if (!res.ok) {
+          document.getElementById('users-container').innerHTML = '<p class="error-banner">У вас нет доступа к этой странице.</p>';
+          return;
+        }
+        const users = await res.json();
+        
+        let html = `<table>
+          <tr><th>ID</th><th>ФИО</th><th>Логин</th><th>Опросов</th><th>Роль</th><th>Действия</th></tr>`;
+        
+        users.forEach(u => {
+          const roleClass = u.role === 'admin' ? 'role-admin' : 'role-organizer';
+          const roleText = u.role === 'admin' ? 'Админ' : 'Организатор';
+          const actionBtn = u.role === 'admin' 
+            ? `<button onclick="changeRole(${u.id}, 'organizer')" class="btn btn-ghost" style="padding: 6px 12px; font-size: 12px;">Сделать Организатором</button>`
+            : `<button onclick="changeRole(${u.id}, 'admin')" class="btn btn-secondary" style="padding: 6px 12px; font-size: 12px;">Сделать Админом</button>`;
+
+          html += `<tr>
+            <td>${u.id}</td>
+            <td><strong>${u.full_name}</strong></td>
+            <td>${u.username}</td>
+            <td>${u.surveys_count} шт.</td>
+            <td><span class="role-badge ${roleClass}">${roleText}</span></td>
+            <td>
+              ${actionBtn}
+              <button onclick="deleteUser(${u.id})" class="btn btn-danger" style="padding: 6px 12px; font-size: 12px; margin-left: 5px;">Удалить</button>
+            </td>
+          </tr>`;
+        });
+        html += `</table>`;
+        document.getElementById('users-container').innerHTML = html;
+      }
+
+      async function changeRole(userId, newRole) {
+        if(!confirm('Изменить роль пользователя?')) return;
+        await fetch('/api/admin/role', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({user_id: userId, role: newRole})
+        });
+        loadUsers();
+      }
+      async function deleteUser(userId) {
+        if(!confirm('ВНИМАНИЕ! Вы точно хотите удалить пользователя и все его опросы? Это действие необратимо.')) return;
+        await fetch('/api/admin/delete_user', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({user_id: userId})
+        });
+        loadUsers(); // Перезагружаем таблицу
+      }
+      window.addEventListener('DOMContentLoaded', loadUsers);
+    </script>
+  </body>
+</html>

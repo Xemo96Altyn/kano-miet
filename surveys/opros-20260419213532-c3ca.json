@@ -1,0 +1,20 @@
+{
+  "title": "opros",
+  "features": [
+    {
+      "feature_id": "А1",
+      "name": "свойство1",
+      "description": ""
+    },
+    {
+      "feature_id": "А2",
+      "name": "свойство1",
+      "description": ""
+    },
+    {
+      "feature_id": "А3",
+      "name": "свойство3",
+      "description": ""
+    }
+  ]
+}

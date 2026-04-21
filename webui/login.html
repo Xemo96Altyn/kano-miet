@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Вход — Kano</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Kano</p>
+          <h1>Вход в систему</h1>
+          <p class="hero-text">Введите учетные данные организатора или войдите как гость.</p>
+        </div>
+        <div class="hero-card">
+          <form id="login-form" onsubmit="return false;">
+            <label class="field-label" for="email">Email</label>
+            <input id="email" type="email" placeholder="you@example.com" autocomplete="username">
+            <label class="field-label" for="password">Пароль</label>
+            <input id="password" type="password" placeholder="Пароль" autocomplete="current-password">
+            <div class="actions">
+              <button id="loginBtn" class="btn btn-primary" type="button">Войти</button>
+              <button id="registerBtn" class="btn btn-ghost" type="button">Зарегистрироваться</button>
+              <button id="guestBtn" class="btn btn-secondary" type="button">Войти как гость</button>
+            </div>
+          </form>
+        </div>
+      </header>
+
+      <main class="layout single-column">
+        <section class="panel">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Заглушка</p>
+              <h2>Временная логика входа</h2>
+            </div>
+          </div>
+          <p class="muted">Кнопка "Войти" временно перенаправляет на личный кабинет.</p>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const loginBtn = document.getElementById('loginBtn');
+        const guestBtn = document.getElementById('guestBtn');
+        const registerBtn = document.getElementById('registerBtn');
+
+        loginBtn.addEventListener('click', () => {
+          // Temporary behavior: redirect to home
+          window.location.href = '/home';
+        });
+
+        guestBtn.addEventListener('click', () => {
+          window.location.href = '/home';
+        });
+
+        registerBtn.addEventListener('click', () => {
+          alert('Регистрация будет реализована позже.');
+        });
+      });
+    </script>
+  </body>
+</html>

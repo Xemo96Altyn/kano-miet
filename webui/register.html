@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Регистрация - ИС КАНО</title>
+    <link rel="stylesheet" href="/assets/styles.css">
+  </head>
+  <body>
+    <div class="page-shell" style="max-width: 500px; margin-top: 100px;">
+      <main class="layout single-column">
+        <section class="panel panel-survey">
+          <div class="panel-head">
+            <div>
+              <p class="section-kicker">Добро пожаловать</p>
+              <h2>Регистрация</h2>
+            </div>
+          </div>
+
+          <div id="status-message" class="error-banner hidden"></div>
+
+          <div class="field-stack">
+            <label class="field-label">ФИО</label>
+            <input id="reg-fullname" type="text" placeholder="Иванов Иван">
+          </div>
+
+          <div class="field-stack">
+            <label class="field-label">Логин</label>
+            <input id="reg-username" type="text" placeholder="Например: ivanov">
+          </div>
+
+          <div class="field-stack">
+            <label class="field-label">Пароль</label>
+            <!-- Type="text" можно заменить на "password", но пока оставил так для удобства отладки -->
+            <input id="reg-password" type="password" placeholder="Придумайте пароль">
+          </div>
+
+          <div class="actions">
+            <button id="btn-register" class="btn btn-primary" type="button" style="width: 100%;">Создать аккаунт</button>
+          </div>
+          
+          <div style="margin-top: 20px; text-align: center;">
+            <a href="/" class="muted">Уже есть аккаунт? Войти</a>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      document.getElementById('btn-register').addEventListener('click', async () => {
+        const fullName = document.getElementById('reg-fullname').value.trim();
+        const username = document.getElementById('reg-username').value.trim();
+        const password = document.getElementById('reg-password').value.trim();
+        const statusDiv = document.getElementById('status-message');
+
+        if (!fullName || !username || !password) {
+          statusDiv.textContent = 'Заполните все поля!';
+          statusDiv.classList.remove('hidden');
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ full_name: fullName, username: username, password: password })
+          });
+          const data = await res.json();
+
+          if (res.ok) {
+            statusDiv.classList.add('hidden');
+            alert('Успешно! Теперь вы можете войти.');
+            window.location.href = '/home'; // Перекидываем в личный кабинет
+          } else {
+            statusDiv.textContent = data.error || 'Ошибка регистрации';
+            statusDiv.classList.remove('hidden');
+          }
+        } catch (e) {
+          statusDiv.textContent = 'Ошибка сети';
+          statusDiv.classList.remove('hidden');
+        }
+      });
+    </script>
+  </body>
+</html>
