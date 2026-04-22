@@ -4,7 +4,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Регистрация - ИС КАНО</title>
-    <link rel="stylesheet" href="/assets/styles.css">
+    <script>
+      (function () {
+        const knownSegments = ["home", "builder", "dashboard", "survey", "register", "admin", "api", "assets", "generated"];
+        const parts = window.location.pathname.split("/").filter(Boolean);
+        let markerIndex = -1;
+        for (let index = parts.length - 1; index >= 0; index -= 1) {
+          if (knownSegments.includes(parts[index])) {
+            markerIndex = index;
+            break;
+          }
+        }
+        const prefixParts = markerIndex === -1 ? parts : parts.slice(0, markerIndex);
+        const basePath = prefixParts.length ? `/${prefixParts.join("/")}/` : "/";
+        window.KANO_BASE_PATH = basePath;
+        const base = document.createElement("base");
+        base.href = new URL(basePath, window.location.origin).toString();
+        document.head.appendChild(base);
+      })();
+    </script>
+    <script src="assets/base-path.js" defer></script>
+    <link rel="stylesheet" href="assets/styles.css">
   </head>
   <body>
     <div class="page-shell" style="max-width: 500px; margin-top: 100px;">
@@ -70,7 +90,7 @@
           if (res.ok) {
             statusDiv.classList.add('hidden');
             alert('Успешно! Теперь вы можете войти.');
-            window.location.href = '/home'; // Перекидываем в личный кабинет
+            window.location.href = window.kanoPath('home');
           } else {
             statusDiv.textContent = data.error || 'Ошибка регистрации';
             statusDiv.classList.remove('hidden');

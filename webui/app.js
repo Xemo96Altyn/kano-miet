@@ -212,7 +212,7 @@ function renderResults(result) {
 
   if (result.summary.chart_url) {
     chartBlock.classList.remove("hidden");
-    chartImage.src = `${result.summary.chart_url}?t=${Date.now()}`;
+    chartImage.src = `${window.kanoUrl(result.summary.chart_url)}?t=${Date.now()}`;
   } else {
     chartBlock.classList.add("hidden");
     chartImage.removeAttribute("src");

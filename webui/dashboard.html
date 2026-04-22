@@ -4,7 +4,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Kano Dashboard</title>
-    <link rel="stylesheet" href="/assets/styles.css">
+    <script>
+      (function () {
+        const knownSegments = ["home", "builder", "dashboard", "survey", "register", "admin", "api", "assets", "generated"];
+        const parts = window.location.pathname.split("/").filter(Boolean);
+        let markerIndex = -1;
+        for (let index = parts.length - 1; index >= 0; index -= 1) {
+          if (knownSegments.includes(parts[index])) {
+            markerIndex = index;
+            break;
+          }
+        }
+        const prefixParts = markerIndex === -1 ? parts : parts.slice(0, markerIndex);
+        const basePath = prefixParts.length ? `/${prefixParts.join("/")}/` : "/";
+        window.KANO_BASE_PATH = basePath;
+        const base = document.createElement("base");
+        base.href = new URL(basePath, window.location.origin).toString();
+        document.head.appendChild(base);
+      })();
+    </script>
+    <script src="assets/base-path.js" defer></script>
+    <link rel="stylesheet" href="assets/styles.css">
   </head>
   <body>
     <div class="page-shell">
@@ -20,7 +40,7 @@
           </div>
         </div>
         <div class="hero-card">
-          <label class="field-label" for="survey-file">Файл опросника</label>
+          <label class="field-label" for="survey-id">Файл опросника</label>
           <div class="survey-load-row">
             <input id="survey-id" type="text" value="" placeholder="Введите survey_id" autocomplete="off">
             <button id="load-dashboard" class="btn btn-primary">Обновить</button>
@@ -29,8 +49,8 @@
         </div>
       </header>
 
-      <main class="layout">
-        <section class="panel panel-survey">
+      <main class="layout dashboard-layout">
+        <section class="panel panel-survey panel-dashboard-main">
           <div class="panel-head">
             <div>
               <p class="section-kicker">Управление</p>
@@ -51,17 +71,7 @@
             <button id="delete-survey" class="btn btn-danger" type="button">Удалить опрос</button>
           </div>
 
-          <div class="panel-head dashboard-survey-list-head">
-            <div>
-              <p class="section-kicker">Опросы</p>
-              <h2>Все созданные опросы</h2>
-            </div>
-          </div>
-          <div id="survey-list" class="feature-results"></div>
-        </section>
-
-        <aside class="panel panel-results">
-          <div class="panel-head">
+          <div class="panel-head dashboard-results-head">
             <div>
               <p class="section-kicker">Аналитика</p>
               <h2>Итоги анализа</h2>
@@ -82,10 +92,35 @@
               <img id="chart-image" alt="Матрица Кано">
             </div>
           </div>
+
+          <details class="kano-help">
+            <summary>Краткая справка по модели Кано</summary>
+            <div class="kano-help-content">
+              <p><strong>Модель Кано</strong> помогает понять, какие свойства продукта являются обязательными, какие линейно повышают удовлетворенность, а какие приятно удивляют пользователя.</p>
+              <p><strong>Must-be</strong> это базовые ожидания. Их отсутствие вызывает сильное раздражение, но наличие воспринимается как норма.</p>
+              <p><strong>One-dimensional</strong> это свойства, где качество реализации напрямую влияет на удовлетворенность: чем лучше сделано, тем выше оценка.</p>
+              <p><strong>Attractive</strong> это неожиданные приятные функции. Они не обязательны, но могут заметно повысить ценность продукта.</p>
+              <p><strong>Indifferent</strong> означает, что наличие или отсутствие свойства почти не влияет на восприятие респондентов.</p>
+              <p><strong>Reverse</strong> показывает, что часть аудитории скорее не хочет видеть это свойство в продукте.</p>
+              <p><strong>Questionable</strong> обычно говорит о противоречивых или нестабильных ответах, которые стоит перепроверить.</p>
+              <p><strong>Коэффициент удовлетворенности</strong> показывает, насколько наличие свойства способно повысить положительное восприятие продукта. Чем он выше, тем сильнее функция может порадовать пользователя.</p>
+              <p><strong>Коэффициент недовольствия</strong> показывает, насколько отсутствие свойства ухудшает опыт. Чем выше его вклад по модулю, тем рискованнее оставлять эту функцию нереализованной.</p>
+            </div>
+          </details>
+        </section>
+
+        <aside class="panel panel-results panel-dashboard-side">
+          <div class="panel-head dashboard-survey-list-head">
+            <div>
+              <p class="section-kicker">Опросы</p>
+              <h2>Все созданные опросы</h2>
+            </div>
+          </div>
+          <div id="survey-list" class="feature-results"></div>
         </aside>
       </main>
     </div>
 
-    <script src="/assets/dashboard.js" defer></script>
+    <script src="assets/dashboard.js" defer></script>
   </body>
 </html>

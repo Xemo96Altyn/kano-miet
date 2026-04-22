@@ -37,8 +37,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
 function currentSurveyId() {
   const parts = window.location.pathname.split("/").filter(Boolean);
-  if (parts[0] === "dashboard" && parts[1]) {
-    return decodeURIComponent(parts[1]);
+  const dashboardIndex = parts.findIndex((part) => part === "dashboard");
+  if (dashboardIndex !== -1 && parts[dashboardIndex + 1]) {
+    return decodeURIComponent(parts[dashboardIndex + 1]);
   }
   return surveyIdInput.value.trim();
 }
@@ -50,6 +51,7 @@ async function refreshDashboard() {
     resetDashboardView();
     return;
   }
+
   surveyIdInput.value = dashboardState.surveyId;
   dashboardStatus.textContent = "Обновление панели...";
 
@@ -72,7 +74,7 @@ async function refreshDashboard() {
       <p>Идентификатор опроса: ${dashboardState.surveyId}</p>
       <p>Свойств в опроснике: ${surveyPayload.survey.features.length}</p>
       <p>Собрано ответов: ${countPayload.respondent_count}</p>
-      <p>Страница опроса: <strong>/survey/${dashboardState.surveyId}</strong></p>
+      <p>Страница опроса: <strong>${window.kanoPath(`survey/${dashboardState.surveyId}`)}</strong></p>
     `;
     dashboardStatus.textContent = "Панель обновлена.";
     await refreshSurveyList();
@@ -110,6 +112,7 @@ async function clearResponses() {
     dashboardStatus.textContent = "Сначала укажите survey_id.";
     return;
   }
+
   const confirmed = window.confirm(
     `Очистить все ответы респондентов для опроса "${dashboardState.surveyId}"? Это действие нельзя отменить.`,
   );
@@ -143,6 +146,7 @@ async function deleteSurvey() {
     dashboardStatus.textContent = "Сначала укажите survey_id.";
     return;
   }
+
   const confirmed = window.confirm(
     `Удалить опрос "${dashboardState.surveyId}" полностью вместе с ответами? Это действие нельзя отменить.`,
   );
@@ -186,12 +190,12 @@ function renderResults(result) {
   priorityBlock.innerHTML = `
     <h3>Порядок развития</h3>
     <p class="result-meta">Сформировано на основе итоговых категорий Кано.</p>
-    <p><strong>1 очередь:</strong> ${formatList(byCategory.must_be)}</p>
-    <p><strong>2 очередь:</strong> ${formatList(byCategory.one_dimensional)}</p>
-    <p><strong>3 очередь:</strong> ${formatList(byCategory.attractive)}</p>
+    <p><strong>1️⃣ очередь:</strong> ${formatList(byCategory.must_be)}</p>
+    <p><strong>2️⃣ очередь:</strong> ${formatList(byCategory.one_dimensional)}</p>
+    <p><strong>3️⃣ очередь:</strong> ${formatList(byCategory.attractive)}</p>
     <p><strong>Низкий приоритет:</strong> ${formatList(byCategory.indifferent)}</p>
     <p><strong>Не реализовывать:</strong> ${formatList(byCategory.reverse)}</p>
-    <p><strong>Questionable:</strong> ${formatList(byCategory.questionable)}</p>
+    <p><strong>Под вопросом:</strong> ${formatList(byCategory.questionable)}</p>
   `;
 
   if (result.warnings?.length) {
@@ -209,7 +213,7 @@ function renderResults(result) {
 
   if (result.summary.chart_url) {
     chartBlock.classList.remove("hidden");
-    chartImage.src = `${result.summary.chart_url}?t=${Date.now()}`;
+    chartImage.src = `${window.kanoUrl(result.summary.chart_url)}?t=${Date.now()}`;
   } else {
     chartBlock.classList.add("hidden");
     chartImage.removeAttribute("src");
@@ -280,14 +284,12 @@ async function refreshSurveyList() {
     }
 
     surveyList.innerHTML = payload.items
-      .map(
-        (item) => {
-          // Если бэкенд прислал данные автора (значит мы админ), формируем строчку
-          const creatorHtml = item.creator_name 
-            ? `<p class="muted" style="margin: 0 0 10px 0; font-size: 13px;">👤 Автор: <strong>${item.creator_name}</strong> (@${item.creator_username})</p>` 
-            : '';
+      .map((item) => {
+        const creatorHtml = item.creator_name
+          ? `<p class="muted" style="margin: 0 0 10px 0; font-size: 13px;">Автор: <strong>${item.creator_name}</strong> (@${item.creator_username})</p>`
+          : "";
 
-          return `
+        return `
           <article class="feature-card">
             <div class="feature-top">
               <div>
@@ -296,15 +298,15 @@ async function refreshSurveyList() {
               </div>
               <span class="pill">${item.respondent_count} ответов</span>
             </div>
-            ${creatorHtml} <!-- Вставляем строчку с автором сюда -->
+            ${creatorHtml}
             <p>Свойств: ${item.feature_count}</p>
             <div class="actions">
               <a class="btn btn-secondary btn-link" href="${item.survey_url}" target="_blank">Страница опроса</a>
-              <a class="btn btn-ghost btn-link" href="${item.dashboard_url}" target="_blank">Панель анализа</a>
+              <a class="btn btn-ghost btn-link" href="${item.dashboard_url}">Панель анализа</a>
             </div>
           </article>
-        `}
-      )
+        `;
+      })
       .join("");
   } catch (error) {
     surveyList.innerHTML = `<div class="empty-state">${error.message}</div>`;

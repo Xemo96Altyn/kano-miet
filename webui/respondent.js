@@ -31,8 +31,9 @@ window.addEventListener("DOMContentLoaded", () => loadSurvey());
 
 function currentSurveyId() {
   const parts = window.location.pathname.split("/").filter(Boolean);
-  if (parts[0] === "survey" && parts[1]) {
-    return decodeURIComponent(parts[1]);
+  const surveyIndex = parts.findIndex((part) => part === "survey");
+  if (surveyIndex !== -1 && parts[surveyIndex + 1]) {
+    return decodeURIComponent(parts[surveyIndex + 1]);
   }
   return surveyIdInput.value.trim() || "telega";
 }

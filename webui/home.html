@@ -4,7 +4,27 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Kano Hub</title>
-    <link rel="stylesheet" href="/assets/styles.css">
+    <script>
+      (function () {
+        const knownSegments = ["home", "builder", "dashboard", "survey", "register", "admin", "api", "assets", "generated"];
+        const parts = window.location.pathname.split("/").filter(Boolean);
+        let markerIndex = -1;
+        for (let index = parts.length - 1; index >= 0; index -= 1) {
+          if (knownSegments.includes(parts[index])) {
+            markerIndex = index;
+            break;
+          }
+        }
+        const prefixParts = markerIndex === -1 ? parts : parts.slice(0, markerIndex);
+        const basePath = prefixParts.length ? `/${prefixParts.join("/")}/` : "/";
+        window.KANO_BASE_PATH = basePath;
+        const base = document.createElement("base");
+        base.href = new URL(basePath, window.location.origin).toString();
+        document.head.appendChild(base);
+      })();
+    </script>
+    <script src="assets/base-path.js" defer></script>
+    <link rel="stylesheet" href="assets/styles.css">
   </head>
   <body>
     <div class="page-shell">
@@ -13,7 +33,7 @@
           <p class="eyebrow">Kano Hub</p>
           <h1>Главная страница управления опросами Кано</h1>
           <p class="hero-text">
-            Отсюда можно создать новый опрос, открыть кабинет анализа или перейти по ссылке респондента.
+            Отсюда можно создать новый опрос или открыть кабинет анализа.
           </p>
 	  <div style="margin-top: 20px;">
             <button id="btn-logout" class="btn btn-ghost">Выйти из аккаунта</button>
@@ -88,7 +108,7 @@
       document.getElementById('btn-logout').addEventListener('click', async () => {
         localStorage.removeItem('kano_role'); // Чистим роль при выходе
         await fetch('/api/logout', { method: 'POST' });
-        window.location.href = '/'; // Возвращаем на страницу входа
+        window.location.href = window.kanoPath('');
       });
     </script>
   </body>

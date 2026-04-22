@@ -3,6 +3,7 @@ from pathlib import Path
 from flask import Flask, request, jsonify, send_from_directory, redirect
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.middleware.proxy_fix import ProxyFix
 from functools import wraps
 from flask import abort
 
@@ -20,11 +21,21 @@ WEB_DIR = BASE_DIR / "webui"
 SURVEYS_DIR = BASE_DIR / "surveys"
 RESPONSES_DIR = BASE_DIR / "responses"
 
+
+def normalize_base_path(path: str) -> str:
+    cleaned = str(path or "").strip()
+    if not cleaned or cleaned == "/":
+        return ""
+    cleaned = "/" + cleaned.strip("/")
+    return cleaned
+
 # Инициализация Flask (указываем webui как папку со статикой)
 app = Flask(__name__, static_folder=str(WEB_DIR))
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
 app.config['SECRET_KEY'] = 'super-secret-key-kano-123' # Секретный ключ для сессий
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///kano.db' # Файл БД появится в корне
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['APPLICATION_ROOT'] = normalize_base_path(os.environ.get("KANO_BASE_PATH", ""))
 
 # Инициализация плагинов
 db.init_app(app)
@@ -35,6 +46,14 @@ login_manager.login_view = 'serve_login' # Куда кидать неавтор�
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+
+@app.before_request
+def apply_proxy_prefix():
+    forwarded_prefix = normalize_base_path(request.headers.get("X-Forwarded-Prefix", ""))
+    base_path = forwarded_prefix or app.config.get("APPLICATION_ROOT", "")
+    if base_path:
+        request.environ["SCRIPT_NAME"] = base_path
 
 # Декоратор для защиты админских маршрутов
 def admin_required(f):
@@ -255,8 +274,8 @@ def create_survey():
         "status": "created",
         "survey_id": survey_id,
         "title": title,
-        "survey_url": f"/survey/{survey_id}",
-        "dashboard_url": f"/dashboard/{survey_id}",
+        "survey_url": f"survey/{survey_id}",
+        "dashboard_url": f"dashboard/{survey_id}",
     }), 201
 
 
@@ -298,8 +317,8 @@ def list_my_surveys():
             "title": meta.title,
             "feature_count": feature_count, # Теперь сюда подставляется реальная цифра
             "respondent_count": resp_count,
-            "survey_url": f"/survey/{meta.survey_uuid}",
-            "dashboard_url": f"/dashboard/{meta.survey_uuid}",
+            "survey_url": f"survey/{meta.survey_uuid}",
+            "dashboard_url": f"dashboard/{meta.survey_uuid}",
         }
 
         # Если запрашивает админ, добавляем информацию об авторе
@@ -349,8 +368,8 @@ def get_survey():
             "survey_id": survey_id,
             "survey": survey.as_dict(),
             "questionnaire": survey.questionnaire_table(),
-            "survey_url": f"/survey/{survey_id}",
-            "dashboard_url": f"/dashboard/{survey_id}",
+            "survey_url": f"survey/{survey_id}",
+            "dashboard_url": f"dashboard/{survey_id}",
         })
     except KanoValidationError as exc:
         return jsonify({"error": str(exc)}), 400
@@ -419,7 +438,7 @@ def analyze_survey():
         
         # Привязываем URL картинки
         if result.get("summary", {}).get("chart_path"):
-            result["summary"]["chart_url"] = f"/generated/{chart_name}"
+            result["summary"]["chart_url"] = f"generated/{chart_name}"
             
         result["summary"]["respondent_count"] = len(responses)
         return jsonify(result)

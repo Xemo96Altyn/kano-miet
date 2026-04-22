@@ -188,6 +188,10 @@ input[type="password"] {
   background: rgba(255,255,255,0.38);
 }
 
+#created-links {
+  margin-top: 40px;
+}
+
 .error-banner {
   margin-bottom: 16px;
   padding: 16px 18px;
@@ -328,6 +332,76 @@ input[type="password"] {
 
 .dashboard-survey-list-head {
   margin-top: 30px;
+}
+
+.dashboard-layout {
+  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 0.8fr);
+  align-items: start;
+}
+
+.panel-dashboard-main {
+  min-width: 0;
+}
+
+.panel-dashboard-side {
+  position: sticky;
+  top: 24px;
+  min-width: 0;
+}
+
+.panel-dashboard-side .feature-results {
+  margin-top: 0;
+}
+
+.panel-dashboard-side .dashboard-survey-list-head {
+  margin-top: 0;
+}
+
+.dashboard-results-head {
+  margin-top: 36px;
+}
+
+.kano-help {
+  margin-top: 28px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255,255,255,0.5);
+  overflow: hidden;
+}
+
+.kano-help summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 20px 22px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.kano-help summary::-webkit-details-marker {
+  display: none;
+}
+
+.kano-help summary::after {
+  content: "+";
+  float: right;
+  color: var(--accent);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.kano-help[open] summary::after {
+  content: "−";
+}
+
+.kano-help-content {
+  padding: 0 22px 22px;
+  border-top: 1px solid var(--line);
+}
+
+.kano-help-content p {
+  margin: 16px 0 0;
+  line-height: 1.6;
+  color: var(--muted);
 }
 
 .home-nav-grid {

@@ -74,7 +74,7 @@ async function createSurvey() {
       <h3>${title}</h3>
       <div class="actions">
         <a class="btn btn-secondary btn-link" href="${payload.survey_url}" target="_blank">Открыть опрос респондента</a>
-        <a class="btn btn-ghost btn-link" href="${payload.dashboard_url}" target="_blank">Открыть панель анализа</a>
+        <a class="btn btn-ghost btn-link" href="${payload.dashboard_url}">Открыть панель анализа</a>
       </div>
       <p><strong>ID опроса:</strong> ${payload.survey_id}</p>
     `;
