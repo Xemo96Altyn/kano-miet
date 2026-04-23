@@ -1,6 +1,7 @@
 import os
 import re
 from pathlib import Path
+from urllib.parse import quote
 from flask import Flask, request, jsonify, send_from_directory, redirect
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -34,13 +35,32 @@ def normalize_base_path(path: str) -> str:
         return ""
     return "/" + "/".join(parts)
 
+
+class SanitizedScriptNameMiddleware:
+    def __init__(self, app):
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        script_name = normalize_base_path(environ.get("SCRIPT_NAME", ""))
+        if script_name != environ.get("SCRIPT_NAME", ""):
+            environ["SCRIPT_NAME"] = script_name
+
+        forwarded_prefix = normalize_base_path(environ.get("HTTP_X_FORWARDED_PREFIX", ""))
+        if forwarded_prefix:
+            environ["HTTP_X_FORWARDED_PREFIX"] = forwarded_prefix
+
+        return self.app(environ, start_response)
+
 # Инициализация Flask (указываем webui как папку со статикой)
 app = Flask(__name__, static_folder=str(WEB_DIR))
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1)
+app.wsgi_app = SanitizedScriptNameMiddleware(app.wsgi_app)
 app.config['SECRET_KEY'] = 'super-secret-key-kano-123' # Секретный ключ для сессий
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///kano.db' # Файл БД появится в корне
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['APPLICATION_ROOT'] = normalize_base_path(os.environ.get("KANO_BASE_PATH", ""))
+app.config['SESSION_COOKIE_NAME'] = 'kano_session'
+app.config['SESSION_COOKIE_PATH'] = '/'
 
 # Инициализация плагинов
 db.init_app(app)
@@ -56,9 +76,19 @@ def load_user(user_id):
 @app.before_request
 def apply_proxy_prefix():
     forwarded_prefix = normalize_base_path(request.headers.get("X-Forwarded-Prefix", ""))
-    base_path = forwarded_prefix or app.config.get("APPLICATION_ROOT", "")
+    script_name = normalize_base_path(request.environ.get("SCRIPT_NAME", ""))
+    base_path = forwarded_prefix or script_name or app.config.get("APPLICATION_ROOT", "")
     if base_path:
         request.environ["SCRIPT_NAME"] = base_path
+
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    next_url = request.full_path if request.query_string else request.path
+    base_path = normalize_base_path(request.environ.get("SCRIPT_NAME", "")) or app.config.get("APPLICATION_ROOT", "")
+    login_url = f"{base_path}/" if base_path else "/"
+    separator = "&" if "?" in login_url else "?"
+    return redirect(f"{login_url}{separator}next={quote(next_url, safe='/?:=&')}")
 
 # Декоратор для защиты админских маршрутов
 def admin_required(f):
@@ -78,6 +108,10 @@ with app.app_context():
 
 @app.route('/')
 def serve_index():
+    if current_user.is_authenticated:
+        base_path = normalize_base_path(request.environ.get("SCRIPT_NAME", "")) or app.config.get("APPLICATION_ROOT", "")
+        home_url = f"{base_path}/home" if base_path else "/home"
+        return redirect(home_url)
     return send_from_directory(WEB_DIR, 'index.html') # Теперь это будет login.html
 
 @app.route('/home')
@@ -124,7 +158,9 @@ def api_login():
     user = User.query.filter_by(username=data.get('username')).first()
     if user and check_password_hash(user.password_hash, data.get('password')):
         login_user(user)
-        return jsonify({"status": "ok", "role": user.role})
+        base_path = normalize_base_path(request.environ.get("SCRIPT_NAME", "")) or app.config.get("APPLICATION_ROOT", "")
+        home_url = f"{base_path}/home" if base_path else "/home"
+        return jsonify({"status": "ok", "role": user.role, "redirect_url": home_url})
     return jsonify({"error": "Неверный логин или пароль"}), 401
 
 @app.route('/api/register', methods=['POST'])
@@ -142,7 +178,9 @@ def api_register():
     db.session.add(new_user)
     db.session.commit()
     login_user(new_user)
-    return jsonify({"status": "created"}), 201
+    base_path = normalize_base_path(request.environ.get("SCRIPT_NAME", "")) or app.config.get("APPLICATION_ROOT", "")
+    home_url = f"{base_path}/home" if base_path else "/home"
+    return jsonify({"status": "created", "redirect_url": home_url}), 201
 
 @app.route('/api/logout', methods=['POST'])
 @login_required

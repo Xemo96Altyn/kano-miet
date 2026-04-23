@@ -86,7 +86,7 @@
           if (res.ok) {
             localStorage.setItem('kano_role', data.role);
             statusDiv.classList.add('hidden');
-            window.location.href = window.kanoPath('home');
+            window.location.href = data.redirect_url || window.kanoPath('home');
           } else {
             statusDiv.textContent = data.error || 'Неверный логин или пароль';
             statusDiv.classList.remove('hidden');
