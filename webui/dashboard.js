@@ -19,6 +19,7 @@ const warningBlock = document.getElementById("warning-block");
 const featureResults = document.getElementById("feature-results");
 const chartBlock = document.getElementById("chart-block");
 const chartImage = document.getElementById("chart-image");
+const statusKinds = ["status-error", "status-success", "status-busy"];
 
 loadDashboardButton.addEventListener("click", () => refreshDashboard());
 runAnalysisButton.addEventListener("click", () => runAnalysis());
@@ -35,6 +36,14 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 });
 
+function setDashboardStatus(message, kind = "") {
+  dashboardStatus.textContent = message;
+  dashboardStatus.classList.remove(...statusKinds);
+  if (kind) {
+    dashboardStatus.classList.add(kind);
+  }
+}
+
 function currentSurveyId() {
   const parts = window.location.pathname.split("/").filter(Boolean);
   const dashboardIndex = parts.findIndex((part) => part === "dashboard");
@@ -47,13 +56,13 @@ function currentSurveyId() {
 async function refreshDashboard() {
   dashboardState.surveyId = currentSurveyId();
   if (!dashboardState.surveyId) {
-    dashboardStatus.textContent = "Введите идентификатор опроса, чтобы открыть аналитику.";
+    setDashboardStatus("Введите идентификатор опроса, чтобы открыть аналитику.", "status-error");
     resetDashboardView();
     return;
   }
 
   surveyIdInput.value = dashboardState.surveyId;
-  dashboardStatus.textContent = "Обновление панели...";
+  setDashboardStatus("Обновление панели...", "status-busy");
 
   try {
     const surveyResponse = await fetch(`/api/survey?id=${encodeURIComponent(dashboardState.surveyId)}`);
@@ -76,15 +85,15 @@ async function refreshDashboard() {
       <p>Собрано ответов: ${countPayload.respondent_count}</p>
       <p>Страница опроса: <strong>${window.kanoPath(`survey/${dashboardState.surveyId}`)}</strong></p>
     `;
-    dashboardStatus.textContent = "Панель обновлена.";
+    setDashboardStatus("Панель обновлена.", "status-success");
     await refreshSurveyList();
   } catch (error) {
-    dashboardStatus.textContent = error.message;
+    setDashboardStatus(error.message, "status-error");
   }
 }
 
 async function runAnalysis() {
-  dashboardStatus.textContent = "Проводим анализ...";
+  setDashboardStatus("Проводим анализ...", "status-busy");
   try {
     const response = await fetch("/api/analyze", {
       method: "POST",
@@ -101,15 +110,15 @@ async function runAnalysis() {
 
     renderResults(payload);
     respondentCount.textContent = `Респондентов: ${payload.summary.respondent_count}`;
-    dashboardStatus.textContent = "Анализ завершен.";
+    setDashboardStatus("Анализ завершен.", "status-success");
   } catch (error) {
-    dashboardStatus.textContent = error.message;
+    setDashboardStatus(error.message, "status-error");
   }
 }
 
 async function clearResponses() {
   if (!dashboardState.surveyId) {
-    dashboardStatus.textContent = "Сначала укажите survey_id.";
+    setDashboardStatus("Сначала укажите survey_id.", "status-error");
     return;
   }
 
@@ -120,7 +129,7 @@ async function clearResponses() {
     return;
   }
 
-  dashboardStatus.textContent = "Очищаем ответы...";
+  setDashboardStatus("Очищаем ответы...", "status-busy");
   try {
     const response = await fetch("/api/responses/clear", {
       method: "POST",
@@ -134,16 +143,16 @@ async function clearResponses() {
 
     respondentCount.textContent = "Респондентов: 0";
     resetResults();
-    dashboardStatus.textContent = "Ответы очищены.";
+    setDashboardStatus("Ответы очищены.", "status-success");
     await refreshDashboard();
   } catch (error) {
-    dashboardStatus.textContent = error.message;
+    setDashboardStatus(error.message, "status-error");
   }
 }
 
 async function deleteSurvey() {
   if (!dashboardState.surveyId) {
-    dashboardStatus.textContent = "Сначала укажите survey_id.";
+    setDashboardStatus("Сначала укажите survey_id.", "status-error");
     return;
   }
 
@@ -154,7 +163,7 @@ async function deleteSurvey() {
     return;
   }
 
-  dashboardStatus.textContent = "Удаляем опрос...";
+  setDashboardStatus("Удаляем опрос...", "status-busy");
   try {
     const response = await fetch("/api/survey/delete", {
       method: "POST",
@@ -170,9 +179,9 @@ async function deleteSurvey() {
     dashboardState.surveyId = "";
     resetDashboardView();
     await refreshSurveyList();
-    dashboardStatus.textContent = `Опрос "${payload.survey_id}" удален.`;
+    setDashboardStatus(`Опрос "${payload.survey_id}" удален.`, "status-success");
   } catch (error) {
-    dashboardStatus.textContent = error.message;
+    setDashboardStatus(error.message, "status-error");
   }
 }
 
@@ -190,9 +199,9 @@ function renderResults(result) {
   priorityBlock.innerHTML = `
     <h3>Порядок развития</h3>
     <p class="result-meta">Сформировано на основе итоговых категорий Кано.</p>
-    <p><strong>1️⃣ очередь:</strong> ${formatList(byCategory.must_be)}</p>
-    <p><strong>2️⃣ очередь:</strong> ${formatList(byCategory.one_dimensional)}</p>
-    <p><strong>3️⃣ очередь:</strong> ${formatList(byCategory.attractive)}</p>
+    <p><strong>1 очередь:</strong> ${formatList(byCategory.must_be)}</p>
+    <p><strong>2 очередь:</strong> ${formatList(byCategory.one_dimensional)}</p>
+    <p><strong>3 очередь:</strong> ${formatList(byCategory.attractive)}</p>
     <p><strong>Низкий приоритет:</strong> ${formatList(byCategory.indifferent)}</p>
     <p><strong>Не реализовывать:</strong> ${formatList(byCategory.reverse)}</p>
     <p><strong>Под вопросом:</strong> ${formatList(byCategory.questionable)}</p>

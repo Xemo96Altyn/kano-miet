@@ -22,12 +22,21 @@ const formActions = document.getElementById("form-actions");
 const submitResponseButton = document.getElementById("submit-response");
 const resetFormButton = document.getElementById("reset-form");
 const thankYouState = document.getElementById("thank-you-state");
+const statusKinds = ["status-error", "status-success", "status-busy"];
 
 loadSurveyButton.addEventListener("click", () => loadSurvey());
 submitResponseButton.addEventListener("click", () => submitResponse());
 resetFormButton.addEventListener("click", () => surveyForm.reset());
 
 window.addEventListener("DOMContentLoaded", () => loadSurvey());
+
+function setSurveyStatus(message, kind = "") {
+  surveyStatus.textContent = message;
+  surveyStatus.classList.remove(...statusKinds);
+  if (kind) {
+    surveyStatus.classList.add(kind);
+  }
+}
 
 function currentSurveyId() {
   const parts = window.location.pathname.split("/").filter(Boolean);
@@ -41,7 +50,7 @@ function currentSurveyId() {
 async function loadSurvey() {
   const surveyId = currentSurveyId();
   surveyIdInput.value = surveyId;
-  surveyStatus.textContent = "Загрузка опросника...";
+  setSurveyStatus("Загрузка опросника...", "status-busy");
   hideError();
   thankYouState.classList.add("hidden");
 
@@ -56,9 +65,9 @@ async function loadSurvey() {
     state.survey = payload.survey;
     state.questionnaire = payload.questionnaire;
     renderSurvey();
-    surveyStatus.textContent = `Опросник ${state.survey.title || state.surveyId} загружен. Можно отвечать.`;
+    setSurveyStatus(`Опросник ${state.survey.title || state.surveyId} загружен. Можно отвечать.`, "status-success");
   } catch (error) {
-    surveyStatus.textContent = error.message;
+    setSurveyStatus(error.message, "status-error");
   }
 }
 
@@ -115,7 +124,7 @@ function buildAnswerBlock(featureId, kind, questionText) {
 
 async function submitResponse() {
   if (!state.survey) {
-    surveyStatus.textContent = "Сначала загрузите опросник.";
+    setSurveyStatus("Сначала загрузите опросник.", "status-error");
     return;
   }
 
@@ -126,14 +135,14 @@ async function submitResponse() {
 
     if (!functional || !dysfunctional) {
       showError(`Для свойства "${feature.name}" нужно заполнить оба ответа, иначе отправка невозможна.`);
-      surveyStatus.textContent = "Опрос заполнен не полностью.";
+      setSurveyStatus("Опрос заполнен не полностью.", "status-error");
       return;
     }
 
     responsePayload[feature.feature_id] = [Number(functional.value), Number(dysfunctional.value)];
   }
 
-  surveyStatus.textContent = "Отправка ответов...";
+  setSurveyStatus("Отправка ответов...", "status-busy");
   hideError();
   try {
     const response = await fetch("/api/respond", {
@@ -153,10 +162,10 @@ async function submitResponse() {
     surveyForm.classList.add("hidden");
     formActions.classList.add("hidden");
     thankYouState.classList.remove("hidden");
-    surveyStatus.textContent = `Спасибо! Ваши ответы сохранены. Всего респондентов: ${payload.respondent_count}.`;
+    setSurveyStatus(`Спасибо! Ваши ответы сохранены. Всего респондентов: ${payload.respondent_count}.`, "status-success");
   } catch (error) {
     showError(error.message);
-    surveyStatus.textContent = error.message;
+    setSurveyStatus(error.message, "status-error");
   }
 }
 

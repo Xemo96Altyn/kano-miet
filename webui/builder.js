@@ -4,13 +4,22 @@ const featureList = document.getElementById("feature-list");
 const addFeatureButton = document.getElementById("add-feature");
 const createSurveyButton = document.getElementById("create-survey");
 const createdLinks = document.getElementById("created-links");
+const statusKinds = ["status-error", "status-success", "status-busy"];
 
-addFeatureButton.addEventListener("click", () => addFeaturePair());
+addFeatureButton.addEventListener("click", () => addFeatureRow());
 createSurveyButton.addEventListener("click", () => createSurvey());
 
 window.addEventListener("DOMContentLoaded", async () => {
   addFeaturePair();
 });
+
+function setBuilderStatus(message, kind = "") {
+  builderStatus.textContent = message;
+  builderStatus.classList.remove(...statusKinds);
+  if (kind) {
+    builderStatus.classList.add(kind);
+  }
+}
 
 function addFeatureRow(name = "", description = "") {
   const row = document.createElement("section");
@@ -49,15 +58,15 @@ async function createSurvey() {
     .filter((item) => item.name);
 
   if (!title) {
-    builderStatus.textContent = "Название опроса обязательно.";
+    setBuilderStatus("Название опроса обязательно.", "status-error");
     return;
   }
   if (!features.length) {
-    builderStatus.textContent = "Добавьте хотя бы одно свойство.";
+    setBuilderStatus("Добавьте хотя бы одно свойство.", "status-error");
     return;
   }
 
-  builderStatus.textContent = "Создаем опрос...";
+  setBuilderStatus("Создаем опрос...", "status-busy");
   try {
     const response = await fetch("/api/surveys", {
       method: "POST",
@@ -78,12 +87,12 @@ async function createSurvey() {
       </div>
       <p><strong>ID опроса:</strong> ${payload.survey_id}</p>
     `;
-    builderStatus.textContent = "Опрос создан и сохранен на сервере.";
+    setBuilderStatus("Опрос создан и сохранен на сервере.", "status-success");
     surveyTitleInput.value = "";
     featureList.innerHTML = "";
     addFeaturePair();
   } catch (error) {
-    builderStatus.textContent = error.message;
+    setBuilderStatus(error.message, "status-error");
   }
 }
 
