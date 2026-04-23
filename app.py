@@ -1,4 +1,5 @@
 import os
+import re
 from pathlib import Path
 from flask import Flask, request, jsonify, send_from_directory, redirect
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
@@ -26,8 +27,12 @@ def normalize_base_path(path: str) -> str:
     cleaned = str(path or "").strip()
     if not cleaned or cleaned == "/":
         return ""
-    cleaned = "/" + cleaned.strip("/")
-    return cleaned
+    parts = [part for part in cleaned.split("/") if part]
+    if parts and re.search(r"\.(?:py|cgi|fcgi|php|pl)$", parts[-1], flags=re.IGNORECASE):
+        parts = parts[:-1]
+    if not parts:
+        return ""
+    return "/" + "/".join(parts)
 
 # Инициализация Flask (указываем webui как папку со статикой)
 app = Flask(__name__, static_folder=str(WEB_DIR))
@@ -41,7 +46,7 @@ app.config['APPLICATION_ROOT'] = normalize_base_path(os.environ.get("KANO_BASE_P
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'serve_login' # Куда кидать неавторизованных
+login_manager.login_view = 'serve_index' # Куда кидать неавторизованных
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -209,7 +214,6 @@ def api_delete_user():
 # ==========================================
 import os
 import secrets
-import re
 import json
 from datetime import datetime
 

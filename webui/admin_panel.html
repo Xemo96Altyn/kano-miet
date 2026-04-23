@@ -15,7 +15,10 @@
             break;
           }
         }
-        const prefixParts = markerIndex === -1 ? parts : parts.slice(0, markerIndex);
+        let prefixParts = markerIndex === -1 ? parts : parts.slice(0, markerIndex);
+        if (prefixParts.length && /\.(py|cgi|fcgi|php|pl)$/i.test(prefixParts[prefixParts.length - 1])) {
+          prefixParts = prefixParts.slice(0, -1);
+        }
         const basePath = prefixParts.length ? `/${prefixParts.join("/")}/` : "/";
         window.KANO_BASE_PATH = basePath;
         const base = document.createElement("base");
